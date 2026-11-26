@@ -1,5 +1,6 @@
 """FastAPI application entry point for ReMetaBase."""
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -8,8 +9,17 @@ from fastapi.staticfiles import StaticFiles
 
 from routers.inspect_router import router as inspect_router
 from routers.snapshot_router import router as snapshot_router
+from services.auto_sync import auto_sync_manager
 
-app = FastAPI(title="ReMetaBase Metadata Engine", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    auto_sync_manager.start()
+    yield
+    await auto_sync_manager.stop()
+
+
+app = FastAPI(title="ReMetaBase Metadata Engine", version="0.2.0", lifespan=lifespan)
 app.include_router(inspect_router)
 app.include_router(snapshot_router)
 

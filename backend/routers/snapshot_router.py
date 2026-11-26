@@ -8,12 +8,24 @@ from services.catalog_db import get_catalog_engine
 from services.metadata_extractor import extract_database_metadata
 from services.snapshot_manager import get_source_snapshot_history
 from sqlalchemy import text
+from services.auto_sync import AutoSyncConfigRequest, auto_sync_manager
 
 router = APIRouter(prefix="/api/snapshots", tags=["Schema Version Control"])
 
 
+@router.get("/auto-sync")
+def get_auto_sync_status() -> dict:
+    return auto_sync_manager.status()
+
+
+@router.post("/auto-sync")
+def update_auto_sync(payload: AutoSyncConfigRequest) -> dict:
+    return auto_sync_manager.configure(payload)
+
+
 @router.post("/sync-changes")
 def sync_and_commit_changes(payload: SyncRequest) -> dict:
+    auto_sync_manager.configure(AutoSyncConfigRequest(targets=payload.targets, sample_limit=payload.sample_limit))
     reports = []
     for target in payload.targets:
         if not target.selected:

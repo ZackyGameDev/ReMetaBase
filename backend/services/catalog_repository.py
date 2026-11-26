@@ -58,8 +58,13 @@ def save_sync_to_catalog(target: DatabaseTargetConfig, result: DatabaseSyncResul
                      "position": col.ordinal_position, "pk": col.is_primary_key, "nullable": col.nullable,
                      "props": json.dumps(props, default=str)}).scalar()
                 column_ids[table.table_name][col.name] = column_id
-            conn.execute(text("INSERT INTO operational_metric(table_id,row_count,null_fraction) VALUES (:id,:count,:fraction)"),
-                         {"id": table_id, "count": table.row_count, "fraction": table.null_fraction})
+            last_metric = conn.execute(text("""SELECT row_count,null_fraction FROM operational_metric
+                WHERE table_id=:id ORDER BY profiled_at DESC LIMIT 1"""), {"id": table_id}).mappings().first()
+            new_fraction = round(float(table.null_fraction), 6)
+            if (last_metric is None or int(last_metric["row_count"]) != int(table.row_count)
+                    or round(float(last_metric["null_fraction"]), 6) != new_fraction):
+                conn.execute(text("INSERT INTO operational_metric(table_id,row_count,null_fraction) VALUES (:id,:count,:fraction)"),
+                             {"id": table_id, "count": table.row_count, "fraction": new_fraction})
 
         # Reconcile FKs after every table/column exists. Delete stale outgoing refs first.
         current_column_ids = [cid for ids in column_ids.values() for cid in ids.values()]

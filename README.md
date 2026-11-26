@@ -45,6 +45,10 @@ Accepts `{ "targets": [...], "sample_limit": 5 }`. Only selected targets are rea
 
 Reads active data sources, tables, columns, operational metrics, and recent schema change records from the central catalog database.
 
+### Auto-Sync
+
+Auto-Sync starts enabled with no targets configured and a 7-second polling interval. Configure targets from the page or use `GET` / `POST /api/snapshots/auto-sync`; the interval is configurable from 3 to 300 seconds. The background worker extracts schemas off the event loop and commits new schema snapshots only when the structural checksum changes. Operational metric rows are added only when row count or table null fraction changes.
+
 Supported dialects are `postgresql`, `mysql`, and `sqlite`. Network database access is read-only at the query level: connection check uses `SELECT 1`; sync uses schema inspection and `SELECT` statements. Use credentials with read-only database permissions when connecting to important systems.
 
 ## Project layout
