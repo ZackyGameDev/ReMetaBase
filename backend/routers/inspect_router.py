@@ -3,7 +3,8 @@
 from sqlalchemy import text
 from fastapi import APIRouter
 
-from schemas import DatabaseSyncResult, DatabaseTargetConfig, SyncRequest
+from schemas import DatabaseTargetConfig, SyncRequest
+from services.catalog_repository import fetch_catalog_state, save_sync_to_catalog
 from services.connection_builder import build_engine
 from services.metadata_extractor import extract_database_metadata
 
@@ -25,9 +26,23 @@ def test_connection(target: DatabaseTargetConfig) -> dict[str, str | bool]:
             engine.dispose()
 
 
-@router.post("/sync", response_model=list[DatabaseSyncResult])
-def sync_databases(payload: SyncRequest) -> list[DatabaseSyncResult]:
-    return [
-        extract_database_metadata(target, payload.sample_limit)
-        for target in payload.targets if target.selected
-    ]
+@router.post("/sync")
+def sync_databases(payload: SyncRequest) -> dict[str, list[dict[str, str | None]]]:
+    summary = []
+    for target in payload.targets:
+        if not target.selected:
+            continue
+        result = extract_database_metadata(target, payload.sample_limit)
+        if result.status == "success":
+            try:
+                save_sync_to_catalog(target, result)
+            except Exception as exc:
+                summary.append({"id": target.id, "label": target.label, "status": "error", "error": f"Catalog save failed: {exc}"})
+                continue
+        summary.append({"id": target.id, "label": target.label, "status": result.status, "error": result.error})
+    return {"synced": summary}
+
+
+@router.get("/catalog")
+def get_catalog() -> list[dict]:
+    return fetch_catalog_state()
