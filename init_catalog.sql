@@ -30,6 +30,16 @@ CREATE TABLE table_meta (
     UNIQUE (schema_id, table_name)
 );
 
+-- Logical fragment groups can contain multiple physical tables.
+CREATE TABLE table_fragment (
+    fragment_id SERIAL PRIMARY KEY,
+    logical_name VARCHAR(120) NOT NULL,
+    fragment_type VARCHAR(30) NOT NULL CHECK (fragment_type IN ('HORIZONTAL', 'VERTICAL')),
+    table_id INT NOT NULL REFERENCES table_meta(table_id) ON DELETE CASCADE,
+    predicate VARCHAR(255),
+    UNIQUE (logical_name, fragment_type, table_id)
+);
+
 -- 2. Cross-Dialect Type Normalization (Populated dynamically on sync)
 CREATE TABLE type_mapping (
     type_mapping_id SERIAL PRIMARY KEY,

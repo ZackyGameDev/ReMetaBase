@@ -45,6 +45,18 @@ Accepts `{ "targets": [...], "sample_limit": 5 }`. Only selected targets are rea
 
 Reads active data sources, tables, columns, operational metrics, and recent schema change records from the central catalog database.
 
+### Fragmentation and lineage
+
+`GET /api/lineage/overview` returns active tables and columns, registered fragment groups, physical/logical references, and heuristic candidates. `POST`/`DELETE /api/lineage/fragments` manage fragment membership; `POST`/`DELETE /api/lineage/links` manage cross-source logical links. Physical foreign keys are marked non-logical and the delete endpoint only deletes rows with `is_logical_cross_db = TRUE`.
+
+The fragment-group table is an additive catalog schema change. Fresh databases create it from `init_catalog.sql`. For an existing catalog initialized before this feature, apply `migrations/001_table_fragment.sql` once, for example:
+
+```powershell
+Get-Content .\migrations\001_table_fragment.sql | docker exec -i metabase_catalog_db psql -U metabase_admin -d metabase_catalog
+```
+
+Horizontal fragment suggestions are based only on identical active column-name sets and are heuristics; review suggestions before registering them. Suggested cross-database links are based on same-named columns in different data sources, so verify direction and meaning before creating a link.
+
 ### Auto-Sync
 
 Auto-Sync starts enabled with no targets configured and a 7-second polling interval. Configure targets from the page or use `GET` / `POST /api/snapshots/auto-sync`; the interval is configurable from 3 to 300 seconds. The background worker extracts schemas off the event loop and commits new schema snapshots only when the structural checksum changes. Operational metric rows are added only when row count or table null fraction changes.

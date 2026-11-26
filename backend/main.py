@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from routers.inspect_router import router as inspect_router
 from routers.snapshot_router import router as snapshot_router
 from routers.annotation_router import router as annotation_router
+from routers.lineage_router import router as lineage_router
 from services.auto_sync import auto_sync_manager
 
 
@@ -23,6 +24,7 @@ app = FastAPI(title="ReMetaBase Metadata Engine", version="0.2.0", lifespan=life
 app.include_router(inspect_router)
 app.include_router(snapshot_router)
 app.include_router(annotation_router)
+app.include_router(lineage_router)
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 if FRONTEND_DIR.exists():
