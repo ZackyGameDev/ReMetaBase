@@ -35,10 +35,14 @@ def sync_databases(payload: SyncRequest) -> dict[str, list[dict[str, str | None]
         result = extract_database_metadata(target, payload.sample_limit)
         if result.status == "success":
             try:
-                save_sync_to_catalog(target, result)
+                snapshot = save_sync_to_catalog(target, result)
             except Exception as exc:
                 summary.append({"id": target.id, "label": target.label, "status": "error", "error": f"Catalog save failed: {exc}"})
                 continue
+            summary.append({"id": target.id, "label": target.label, "status": result.status,
+                            "error": result.error, "changed": snapshot["changed"],
+                            "version_no": snapshot["version_no"], "changes": snapshot["changes"]})
+            continue
         summary.append({"id": target.id, "label": target.label, "status": result.status, "error": result.error})
     return {"synced": summary}
 
