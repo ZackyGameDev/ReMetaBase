@@ -57,6 +57,10 @@ Get-Content .\migrations\001_table_fragment.sql | docker exec -i metabase_catalo
 
 Horizontal fragment suggestions are based only on identical active column-name sets and are heuristics; review suggestions before registering them. Suggested cross-database links are based on same-named columns in different data sources, so verify direction and meaning before creating a link.
 
+### Natural-language search
+
+`POST /api/search` accepts `{ "query": "..." }` and returns an answer plus verified table/column matches. It uses local Ollama when available and falls back to keyword matching when Ollama cannot answer. Open `/search.html` for the Ask Catalog page. Results link to the matching catalog asset; search context includes active schema, annotations, fragment groups, profile metrics, and relationships.
+
 ### Auto-Sync
 
 Auto-Sync starts enabled with no targets configured and a 7-second polling interval. Configure targets from the page or use `GET` / `POST /api/snapshots/auto-sync`; the interval is configurable from 3 to 300 seconds. The background worker extracts schemas off the event loop and commits new schema snapshots only when the structural checksum changes. Operational metric rows are added only when row count or table null fraction changes.

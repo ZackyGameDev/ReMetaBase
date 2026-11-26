@@ -8,7 +8,7 @@
   </style>
 </head>
 <body><main class="wrap">
-  <header><span class="mark">▤</span><div><h1>ReMetaBase</h1><p>Database schema explorer · read-only inspection</p></div><a href="/enriched.html">Human-readable catalog</a><a href="/lineage.html">Lineage &amp; Fragments</a></header>
+  <header><span class="mark">▤</span><div><h1>ReMetaBase</h1><p>Database schema explorer · read-only inspection</p></div><a href="/enriched.html">Human-readable catalog</a><a href="/lineage.html">Lineage &amp; Fragments</a><a href="/search.html">Ask Catalog</a></header>
   <section class="panel"><h2>Databases</h2><p class="muted">Configure connection details, select sources, then sync metadata and a small read-only row sample.</p>
     <div id="targets" class="targets"></div>
     <div class="row actions"><button onclick="addTarget()">＋ Add database</button><span class="spacer"></span><label>Auto-Sync <input id="auto-sync-toggle" type="checkbox" checked onchange="saveAutoSyncConfig()"></label><label>Every <input id="auto-sync-interval" type="number" min="3" max="300" value="7" style="width:70px" onchange="saveAutoSyncConfig()"> seconds</label><span id="auto-sync-badge" class="status">watching</span><label>Sample rows/table <input id="sample-limit" type="number" min="1" max="50" value="5" style="width:70px" onchange="saveAutoSyncConfig()"></label><button id="sync" class="primary" onclick="syncSelected()">Check &amp; commit schema changes</button></div>
