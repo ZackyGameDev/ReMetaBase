@@ -1,0 +1,35 @@
+services:
+  target_erp_pg:
+    image: postgres:16
+    container_name: target_erp_pg
+    environment:
+      POSTGRES_USER: demo_user
+      POSTGRES_PASSWORD: demo_password
+      POSTGRES_DB: erp_production
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init_pg.sql:/docker-entrypoint-initdb.d/init_pg.sql
+
+  target_hr_mysql:
+    image: mysql:8.0
+    container_name: target_hr_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: hr_system
+      MYSQL_USER: demo_user
+      MYSQL_PASSWORD: demo_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./init_mysql.sql:/docker-entrypoint-initdb.d/init_mysql.sql
+
+  metabase_catalog_db:
+    image: postgres:16
+    container_name: metabase_catalog_db
+    environment:
+      POSTGRES_USER: metabase_admin
+      POSTGRES_PASSWORD: metabase_password
+      POSTGRES_DB: metabase_catalog
+    ports:
+      - "5432:5432"

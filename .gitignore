@@ -1,0 +1,44 @@
+# Python bytecode and tooling caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# SQLite runtime databases (keep the checked-in demo fixture)
+*.sqlite
+*.sqlite3
+*.db
+!legacy_ops.db
+
+# Node tooling, should it be added for frontend development later
+node_modules/
+dist/
