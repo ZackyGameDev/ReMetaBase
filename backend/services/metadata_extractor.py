@@ -19,9 +19,7 @@ def _serialize_value(value: Any) -> Any:
     return str(value)
 
 
-def extract_database_metadata(
-    target: DatabaseTargetConfig, sample_limit: int = 5
-) -> DatabaseSyncResult:
+def extract_database_metadata(target: DatabaseTargetConfig, sample_limit: int = 5) -> DatabaseSyncResult:
     engine = None
     try:
         engine = build_engine(target)
