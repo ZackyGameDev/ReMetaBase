@@ -126,13 +126,23 @@ def fetch_catalog_state() -> list[dict[str, Any]]:
                 WHERE s.source_id=:source AND t.is_active ORDER BY t.table_name"""), {"source": source["source_id"]}).mappings().all()
             table_list = []
             for table in tables:
+                table_annotation = conn.execute(text("""SELECT a.annotation_id,a.data_owner,a.definition,a.purpose,a.tags,a.user_id,u.name AS author
+                    FROM business_annotation a LEFT JOIN app_user u ON u.user_id=a.user_id
+                    WHERE a.table_id=:id ORDER BY a.annotation_id DESC LIMIT 1"""), {"id": table["table_id"]}).mappings().first()
                 columns = conn.execute(text("""SELECT c.column_id,c.column_name,c.raw_type,tm.unified_type,c.is_primary_key,c.is_nullable,c.ordinal_position,c.dialect_props,
                     pt.table_name || '.' || pc.column_name AS foreign_key FROM column_meta c
                     LEFT JOIN type_mapping tm ON tm.type_mapping_id=c.type_mapping_id
                     LEFT JOIN column_references cr ON cr.child_column_id=c.column_id LEFT JOIN column_meta pc ON pc.column_id=cr.parent_column_id
                     LEFT JOIN table_meta pt ON pt.table_id=pc.table_id WHERE c.table_id=:table AND c.is_active ORDER BY c.ordinal_position"""),
                     {"table": table["table_id"]}).mappings().all()
-                table_list.append({**dict(table), "columns": [dict(column) for column in columns]})
+                column_list = []
+                for column in columns:
+                    annotation = conn.execute(text("""SELECT a.annotation_id,a.data_owner,a.definition,a.purpose,a.tags,a.user_id,u.name AS author
+                        FROM business_annotation a LEFT JOIN app_user u ON u.user_id=a.user_id
+                        WHERE a.column_id=:id ORDER BY a.annotation_id DESC LIMIT 1"""), {"id": column["column_id"]}).mappings().first()
+                    column_list.append({**dict(column), "annotation": dict(annotation) if annotation else None})
+                table_list.append({**dict(table), "annotation": dict(table_annotation) if table_annotation else None,
+                                   "columns": column_list})
             latest = conn.execute(text("SELECT version_no FROM schema_snapshot WHERE source_id=:source ORDER BY version_no DESC LIMIT 1"), {"source": source["source_id"]}).scalar()
             output.append({"source_id": source["source_id"], "name": source["name"], "db_type": source["db_type"],
                            "last_extracted_at": str(source["last_extracted_at"]), "current_version": latest or 0,
