@@ -57,6 +57,10 @@ Get-Content .\migrations\001_table_fragment.sql | docker exec -i metabase_catalo
 
 Horizontal fragment suggestions are based only on identical active column-name sets and are heuristics; review suggestions before registering them. Suggested cross-database links are based on same-named columns in different data sources, so verify direction and meaning before creating a link.
 
+### System overview
+
+`/overview.html` is a read-only architecture and relationship graph. It consumes only `GET /api/catalog` and `GET /api/lineage/overview`; it adds no backend endpoints or mutations. Use drag to pan, the wheel to zoom, and the layer toggles or inspector to explore the graph.
+
 ### Auto-Sync
 
 Auto-Sync starts enabled with no targets configured and a 7-second polling interval. Configure targets from the page or use `GET` / `POST /api/snapshots/auto-sync`; the interval is configurable from 3 to 300 seconds. The background worker extracts schemas off the event loop and commits new schema snapshots only when the structural checksum changes. Operational metric rows are added only when row count or table null fraction changes.
